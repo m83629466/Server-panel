@@ -1,28 +1,54 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Status Pterodactyl + IP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Testando a API do MagmaNode</title>
+  <script>
+    async function fetchStatus() {
+      try {
+        const response = await fetch('https://server-panel-figp.onrender.com');
+        const data = await response.json();
+        
+        if (data.success) {
+          document.getElementById('status').innerText = `
+            Status: ${data.data.status}
+            CPU: ${data.data.cpu}
+            RAM: ${data.data.ram}
+            Disco: ${data.data.disk}
+            Jogadores: ${data.data.players}
+          `;
+        } else {
+          document.getElementById('status').innerText = 'Erro ao obter dados do servidor';
+        }
+      } catch (err) {
+        console.error(err);
+        document.getElementById('status').innerText = 'Erro ao comunicar com a API';
+      }
+    }
+
+    async function startServer() {
+      try {
+        const response = await fetch('http://localhost:3000/api/power/start', {
+          method: 'POST',
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          alert('Servidor iniciado com sucesso!');
+        } else {
+          alert(`Erro: ${result.error}`);
+        }
+      } catch (err) {
+        alert('Erro ao enviar comando para iniciar o servidor');
+      }
+    }
+  </script>
 </head>
 <body>
-  <h1>Status do Servidor</h1>
-  <pre id="status">Carregando...</pre>
-
-  <h2>Seu IP:</h2>
-  <pre id="meu-ip">Carregando...</pre>
-
-  <script>
-    const BACKEND_URL = 'https://server-panel-figp.onrender.com';
-
-    fetch(BACKEND_URL)
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById('status').textContent = JSON.stringify(data.server, null, 2);
-        document.getElementById('meu-ip').textContent = data.ip;
-      })
-      .catch(err => {
-        document.getElementById('status').textContent = 'Erro ao carregar status: ' + err;
-      });
-  </script>
+  <h1>Testando a API do MagmaNode</h1>
+  <button onclick="fetchStatus()">Obter Status do Servidor</button>
+  <button onclick="startServer()">Iniciar Servidor</button>
+  <p id="status"></p>
 </body>
 </html>
