@@ -91,7 +91,7 @@
 
     async function startServer() {
       try {
-        const response = await fetch('http://localhost:3000/api/power/start', {
+        const response = await fetch('https://server-panel-figp.onrender.com/api/power/start', {
           method: 'POST',
         });
         const result = await response.json();
