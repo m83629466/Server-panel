@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Testando a API do MagmaNode</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Status do MagmaNode</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f4f7f6;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #ffffff);
       color: #333;
       margin: 0;
       padding: 0;
@@ -17,42 +20,46 @@
       align-items: center;
       height: 100vh;
       flex-direction: column;
+      text-align: center;
     }
 
     h1 {
+      font-size: 2.5rem;
       color: #2c3e50;
-      font-size: 2.5em;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
     }
 
-    .button {
+    .action-button {
       background-color: #3498db;
       color: white;
       border: none;
-      padding: 15px 25px;
-      font-size: 1em;
-      margin: 10px;
-      border-radius: 5px;
+      padding: 15px 40px;
+      font-size: 1.1rem;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background-color 0.3s;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: background-color 0.3s ease, transform 0.2s ease;
     }
 
-    .button:hover {
+    .action-button:hover {
       background-color: #2980b9;
+      transform: translateY(-2px);
+    }
+
+    .action-button:active {
+      transform: scale(0.98);
     }
 
     #status {
+      margin-top: 30px;
+      padding: 25px;
+      border-radius: 10px;
       background-color: #fff;
-      color: #333;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      width: 80%;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       max-width: 600px;
-      margin-top: 20px;
-      text-align: center;
-      font-size: 1.2em;
+      width: 90%;
       display: none;
+      font-size: 1.1rem;
     }
 
     .status-success {
@@ -63,56 +70,59 @@
       color: #e74c3c;
     }
   </style>
-  <script>
-    async function fetchStatus() {
-      try {
-        const response = await fetch('https://server-panel-figp.onrender.com');
-        const data = await response.json();
+</head>
+<body>
 
-        const statusElement = document.getElementById('status');
-        if (data.success) {
+  <h1>Status do MagmaNode</h1>
+
+  <button class="action-button" onclick="executarAcao()">Executar Ação</button>
+
+  <div id="status"></div>
+
+  <script>
+    // ✅ Apenas altere esta constante para mudar o link base da API
+    const API_BASE = 'https://vercel.com/m83629466s-projects/server-panel/GgjDCsyhAvBCAWMXsp3k6uCnKTRs';
+
+    async function executarAcao() {
+      const statusElement = document.getElementById('status');
+      statusElement.style.display = 'block';
+      statusElement.innerHTML = 'Carregando dados do servidor...';
+
+      try {
+        // Obter status do servidor
+        const statusResponse = await fetch(`${API_BASE}`);
+        const statusData = await statusResponse.json();
+
+        if (statusData.success) {
           statusElement.innerHTML = `
-            <p class="status-success"><strong>Status:</strong> ${data.data.status}</p>
-            <p><strong>CPU:</strong> ${data.data.cpu}</p>
-            <p><strong>RAM:</strong> ${data.data.ram}</p>
-            <p><strong>Disco:</strong> ${data.data.disk}</p>
-            <p><strong>Jogadores:</strong> ${data.data.players}</p>
+            <p class="status-success"><strong>Status:</strong> ${statusData.data.status}</p>
+            <p><strong>CPU:</strong> ${statusData.data.cpu}</p>
+            <p><strong>RAM:</strong> ${statusData.data.ram}</p>
+            <p><strong>Disco:</strong> ${statusData.data.disk}</p>
+            <p><strong>Jogadores:</strong> ${statusData.data.players}</p>
           `;
         } else {
-          statusElement.innerHTML = '<p class="status-error">Erro ao obter dados do servidor</p>';
+          statusElement.innerHTML = `<p class="status-error">Erro ao obter dados do servidor.</p>`;
         }
-        statusElement.style.display = 'block';
-      } catch (err) {
-        console.error(err);
-        document.getElementById('status').innerHTML = '<p class="status-error">Erro ao comunicar com a API</p>';
-        document.getElementById('status').style.display = 'block';
-      }
-    }
 
-    async function startServer() {
-      try {
-        const response = await fetch('https://server-panel-figp.onrender.com/api/power/start', {
-          method: 'POST',
+        // Tentar iniciar o servidor
+        const startResponse = await fetch(`${API_BASE}/api/power/start`, {
+          method: 'POST'
         });
-        const result = await response.json();
+        const startResult = await startResponse.json();
 
-        if (result.success) {
-          alert('Servidor iniciado com sucesso!');
+        if (startResult.success) {
+          statusElement.innerHTML += `<p class="status-success">Servidor iniciado com sucesso!</p>`;
         } else {
-          alert(`Erro: ${result.error}`);
+          statusElement.innerHTML += `<p class="status-error">Falha ao iniciar o servidor: ${startResult.error || 'Erro desconhecido'}</p>`;
         }
-      } catch (err) {
-        alert('Erro ao enviar comando para iniciar o servidor');
+
+      } catch (error) {
+        console.error(error);
+        statusElement.innerHTML = '<p class="status-error">Erro ao comunicar com a API.</p>';
       }
     }
   </script>
-</head>
 
-<body>
-  <h1>Testando a API do MagmaNode</h1>
-  <button class="button" onclick="fetchStatus()">Obter Status do Servidor</button>
-  <button class="button" onclick="startServer()">Iniciar Servidor</button>
-  <p id="status"></p>
 </body>
-
 </html>
